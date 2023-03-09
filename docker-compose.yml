@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  bot-1:
+    build: backend
+  nats-server:
+    image: "nats:latest"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+      - "6222:6222"
