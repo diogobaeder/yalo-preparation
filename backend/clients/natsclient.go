@@ -6,8 +6,13 @@ import (
 	"os"
 )
 
+// SimplifiedJetStream is a simplified version of nats.JetStreamContext containing only the methods we need.
+// This will help with mocking the interface in tests.
+type SimplifiedJetStream interface {
+}
+
 type Client struct {
-	js nats.JetStreamContext
+	js SimplifiedJetStream
 }
 
 func NewNatsClient() (Client, error) {

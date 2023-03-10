@@ -16,5 +16,6 @@ func TestStartsWithJetStream(t *testing.T) {
 	instance, err := NewNatsClient()
 
 	require.Nilf(err, "Could not instantiate client: %v", err)
-	require.Implements((*nats.JetStreamContext)(nil), instance.js, "Not an instance of JetStreamContext")
+	require.Implements((*SimplifiedJetStream)(nil), instance.js)
+	require.Implements((*nats.JetStreamContext)(nil), instance.js)
 }
