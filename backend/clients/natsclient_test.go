@@ -8,14 +8,14 @@ import (
 )
 
 func TestStartsWithJetStream(t *testing.T) {
-	require := require.New(t)
+	ensure := require.New(t)
 	if os.Getenv("NATS_URL") == "" {
 		t.Skip("NATS_URL not configured, skipping the test.")
 	}
 
 	instance, err := NewNatsClient()
 
-	require.Nilf(err, "Could not instantiate client: %v", err)
-	require.Implements((*SimplifiedJetStream)(nil), instance.js)
-	require.Implements((*nats.JetStreamContext)(nil), instance.js)
+	ensure.Nilf(err, "Could not instantiate client: %v", err)
+	ensure.Implements((*SimplifiedJetStream)(nil), instance.js)
+	ensure.Implements((*nats.JetStreamContext)(nil), instance.js)
 }
