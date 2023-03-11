@@ -11,6 +11,7 @@ import (
 // This will help with mocking the interface in tests.
 type SimplifiedJetStream interface {
 	AddStream(cfg *nats.StreamConfig, opts ...nats.JSOpt) (*nats.StreamInfo, error)
+	Subscribe(subj string, cb nats.MsgHandler, opts ...nats.SubOpt) (*nats.Subscription, error)
 }
 
 type YaloNatsClient struct {
@@ -26,6 +27,12 @@ func (c *YaloNatsClient) Prepare() error {
 	})
 
 	return err
+}
+
+func (c *YaloNatsClient) Subscribe(subj string, cb nats.MsgHandler, opts ...nats.SubOpt) (*nats.Subscription, error) {
+	_ = opts
+	subscription, err := c.js.Subscribe(subj, cb)
+	return subscription, err
 }
 
 func NewNatsClient() (YaloNatsClient, error) {

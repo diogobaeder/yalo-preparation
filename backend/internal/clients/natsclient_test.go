@@ -19,6 +19,12 @@ func (j *JetStreamContextMock) AddStream(cfg *nats.StreamConfig, opts ...nats.JS
 	return args.Get(0).(*nats.StreamInfo), nil
 }
 
+func (j *JetStreamContextMock) Subscribe(subj string, cb nats.MsgHandler, opts ...nats.SubOpt) (*nats.Subscription, error) {
+	_ = opts
+	args := j.Called(subj, cb)
+	return args.Get(0).(*nats.Subscription), nil
+}
+
 func TestStartsWithJetStream(t *testing.T) {
 	ensure := require.New(t)
 	if os.Getenv("NATS_URL") == "" {
@@ -48,4 +54,21 @@ func TestPreparesClient(t *testing.T) {
 	_ = instance.Prepare()
 
 	ensure.True(js.AssertCalled(t, "AddStream", config))
+}
+
+func TestSubscribesToSubject(t *testing.T) {
+	ensure := require.New(t)
+	js := new(JetStreamContextMock)
+	instance := &YaloNatsClient{js}
+	subject := "yalo.something"
+	callback := func(msg *nats.Msg) {}
+	subscription := new(nats.Subscription)
+	// Note: unfortunately I can only make this test pass if I use mock.Anything to match the callback function.
+	// In the future hopefully I can use testify's more specific matchers.
+	js.On("Subscribe", subject, mock.Anything).Return(subscription, nil)
+
+	_, err := instance.Subscribe(subject, callback)
+
+	ensure.Nil(err)
+	ensure.True(js.AssertCalled(t, "Subscribe", subject, mock.Anything))
 }
