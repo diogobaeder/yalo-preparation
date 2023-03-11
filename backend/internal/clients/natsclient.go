@@ -29,8 +29,7 @@ func (c *YaloNatsClient) Prepare() error {
 	return err
 }
 
-func (c *YaloNatsClient) Subscribe(subj string, cb nats.MsgHandler, opts ...nats.SubOpt) (*nats.Subscription, error) {
-	_ = opts
+func (c *YaloNatsClient) Subscribe(subj string, cb nats.MsgHandler) (*nats.Subscription, error) {
 	subscription, err := c.js.Subscribe(subj, cb)
 	return subscription, err
 }
