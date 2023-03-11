@@ -14,6 +14,7 @@ type SimplifiedJetStream interface {
 	Subscribe(subj string, cb nats.MsgHandler, opts ...nats.SubOpt) (*nats.Subscription, error)
 	QueueSubscribe(subj, queue string, cb nats.MsgHandler, opts ...nats.SubOpt) (*nats.Subscription, error)
 	PublishAsync(subj string, data []byte, opts ...nats.PubOpt) (nats.PubAckFuture, error)
+	PublishAsyncComplete() <-chan struct{}
 }
 
 type YaloNatsClient struct {
@@ -44,6 +45,10 @@ func (c *YaloNatsClient) QueueSubscribe(subj, queue string, cb nats.MsgHandler) 
 func (c *YaloNatsClient) Publish(subj string, data []byte) (nats.PubAckFuture, error) {
 	paf, err := c.js.PublishAsync(subj, data)
 	return paf, err
+}
+
+func (c *YaloNatsClient) DonePublishing() <-chan struct{} {
+	return c.js.PublishAsyncComplete()
 }
 
 func NewNatsClient() (YaloNatsClient, error) {

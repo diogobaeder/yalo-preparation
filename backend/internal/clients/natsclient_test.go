@@ -37,6 +37,11 @@ func (j *JetStreamContextMock) PublishAsync(subj string, data []byte, opts ...na
 	return args.Get(0).(nats.PubAckFuture), nil
 }
 
+func (j *JetStreamContextMock) PublishAsyncComplete() <-chan struct{} {
+	args := j.Called()
+	return args.Get(0).(<-chan struct{})
+}
+
 type pubAckFuture struct{}
 
 func (p *pubAckFuture) Ok() <-chan *nats.PubAck {
@@ -132,4 +137,16 @@ func TestPublishesToSubject(t *testing.T) {
 
 	ensure.Nil(err)
 	ensure.True(js.AssertCalled(t, "PublishAsync", subject, data))
+}
+
+func TestChecksIsDonePublishing(t *testing.T) {
+	ensure := require.New(t)
+	js := new(JetStreamContextMock)
+	instance := &YaloNatsClient{js}
+	channel := make(<-chan struct{})
+	js.On("PublishAsyncComplete").Return(channel)
+
+	instance.DonePublishing()
+
+	ensure.True(js.AssertCalled(t, "PublishAsyncComplete"))
 }
