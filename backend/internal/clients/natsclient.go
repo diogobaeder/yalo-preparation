@@ -12,6 +12,7 @@ import (
 type SimplifiedJetStream interface {
 	AddStream(cfg *nats.StreamConfig, opts ...nats.JSOpt) (*nats.StreamInfo, error)
 	Subscribe(subj string, cb nats.MsgHandler, opts ...nats.SubOpt) (*nats.Subscription, error)
+	QueueSubscribe(subj, queue string, cb nats.MsgHandler, opts ...nats.SubOpt) (*nats.Subscription, error)
 }
 
 type YaloNatsClient struct {
@@ -31,6 +32,11 @@ func (c *YaloNatsClient) Prepare() error {
 
 func (c *YaloNatsClient) Subscribe(subj string, cb nats.MsgHandler) (*nats.Subscription, error) {
 	subscription, err := c.js.Subscribe(subj, cb)
+	return subscription, err
+}
+
+func (c *YaloNatsClient) QueueSubscribe(subj, queue string, cb nats.MsgHandler) (*nats.Subscription, error) {
+	subscription, err := c.js.QueueSubscribe(subj, queue, cb)
 	return subscription, err
 }
 
