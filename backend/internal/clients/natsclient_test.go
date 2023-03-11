@@ -31,6 +31,28 @@ func (j *JetStreamContextMock) QueueSubscribe(subj, queue string, cb nats.MsgHan
 	return args.Get(0).(*nats.Subscription), nil
 }
 
+func (j *JetStreamContextMock) PublishAsync(subj string, data []byte, opts ...nats.PubOpt) (nats.PubAckFuture, error) {
+	_ = opts
+	args := j.Called(subj, data)
+	return args.Get(0).(nats.PubAckFuture), nil
+}
+
+type pubAckFuture struct{}
+
+func (p *pubAckFuture) Ok() <-chan *nats.PubAck {
+	channel := make(chan *nats.PubAck)
+	return channel
+}
+
+func (p *pubAckFuture) Err() <-chan error {
+	channel := make(chan error)
+	return channel
+}
+
+func (p *pubAckFuture) Msg() *nats.Msg {
+	return new(nats.Msg)
+}
+
 func TestStartsWithJetStream(t *testing.T) {
 	ensure := require.New(t)
 	if os.Getenv("NATS_URL") == "" {
@@ -95,4 +117,19 @@ func TestSubscribesToSubjectInQueue(t *testing.T) {
 
 	ensure.Nil(err)
 	ensure.True(js.AssertCalled(t, "QueueSubscribe", subject, queue, mock.Anything))
+}
+
+func TestPublishesToSubject(t *testing.T) {
+	ensure := require.New(t)
+	js := new(JetStreamContextMock)
+	instance := &YaloNatsClient{js}
+	subject := "yalo.something"
+	data := []byte("somewhere")
+	paf := new(pubAckFuture)
+	js.On("PublishAsync", subject, data).Return(paf, nil)
+
+	_, err := instance.Publish(subject, data)
+
+	ensure.Nil(err)
+	ensure.True(js.AssertCalled(t, "PublishAsync", subject, data))
 }
