@@ -35,7 +35,7 @@ func TestStartsWithJetStream(t *testing.T) {
 func TestPreparesClient(t *testing.T) {
 	ensure := require.New(t)
 	js := new(JetStreamContextMock)
-	instance := &Client{js}
+	instance := &YaloNatsClient{js}
 	duration, _ := time.ParseDuration("24h")
 	config := &nats.StreamConfig{
 		Name:     "yalo",

@@ -13,11 +13,11 @@ type SimplifiedJetStream interface {
 	AddStream(cfg *nats.StreamConfig, opts ...nats.JSOpt) (*nats.StreamInfo, error)
 }
 
-type Client struct {
+type YaloNatsClient struct {
 	js SimplifiedJetStream
 }
 
-func (c *Client) Prepare() error {
+func (c *YaloNatsClient) Prepare() error {
 	duration, _ := time.ParseDuration("24h")
 	_, err := c.js.AddStream(&nats.StreamConfig{
 		Name:     "yalo",
@@ -28,22 +28,22 @@ func (c *Client) Prepare() error {
 	return err
 }
 
-func NewNatsClient() (Client, error) {
+func NewNatsClient() (YaloNatsClient, error) {
 	url := os.Getenv("NATS_URL")
 	if url == "" {
-		return Client{}, errors.New("NATS_URL not defined")
+		return YaloNatsClient{}, errors.New("NATS_URL not defined")
 	}
 	conn, err := nats.Connect(url)
 	if err != nil {
-		return Client{}, err
+		return YaloNatsClient{}, err
 	}
 
 	js, err := conn.JetStream()
 	if err != nil {
-		return Client{}, err
+		return YaloNatsClient{}, err
 	}
 
-	return Client{
+	return YaloNatsClient{
 		js,
 	}, nil
 }
