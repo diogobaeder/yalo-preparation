@@ -27,9 +27,11 @@ func main() {
 		matches := botSubjectPattern.FindStringSubmatch(msg.Subject)
 		index := botSubjectPattern.SubexpIndex("user")
 		user := matches[index]
-		log.Printf("Got message fro user %v: %v", user, string(msg.Data))
+		userMessage := string(msg.Data)
+		log.Printf(`Got message from user %v: "%v"`, user, userMessage)
 		userSubject := fmt.Sprintf("yalo.user.%v", user)
-		if _, err := client.Publish(userSubject, []byte("Got your message!")); err != nil {
+		botMessage := fmt.Sprintf(`Got your message, %v! This is what you said: "%v"`, user, userMessage)
+		if _, err := client.Publish(userSubject, []byte(botMessage)); err != nil {
 			log.Panicf("Couldn't publish message: %v", err)
 		}
 	})
