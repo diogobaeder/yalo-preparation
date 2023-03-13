@@ -16,5 +16,5 @@ func TestStartsWithSession(t *testing.T) {
 	instance, err := NewScyllaClient()
 
 	ensure.Nilf(err, "Could not instantiate client: %v", err)
-	ensure.IsType(gocqlx.Session{}, instance.session)
+	ensure.IsType(&gocqlx.Session{}, instance.session)
 }

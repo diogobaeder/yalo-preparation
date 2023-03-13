@@ -9,7 +9,7 @@ import (
 )
 
 type ScyllaClient struct {
-	session gocqlx.Session
+	session *gocqlx.Session
 }
 
 func NewScyllaClient() (*ScyllaClient, error) {
@@ -23,5 +23,5 @@ func NewScyllaClient() (*ScyllaClient, error) {
 	if err != nil {
 		return &ScyllaClient{}, errors.New("couldn't create session")
 	}
-	return &ScyllaClient{session}, nil
+	return &ScyllaClient{&session}, nil
 }
