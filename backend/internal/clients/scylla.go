@@ -3,12 +3,13 @@ package clients
 import (
 	"errors"
 	"github.com/gocql/gocql"
+	"github.com/scylladb/gocqlx/v2"
 	"os"
 	"strings"
 )
 
 type ScyllaClient struct {
-	session *gocql.Session
+	session gocqlx.Session
 }
 
 func NewScyllaClient() (*ScyllaClient, error) {
@@ -18,7 +19,7 @@ func NewScyllaClient() (*ScyllaClient, error) {
 	}
 	hosts := strings.Split(urls, ",")
 	cluster := gocql.NewCluster(hosts...)
-	session, err := cluster.CreateSession()
+	session, err := gocqlx.WrapSession(cluster.CreateSession())
 	if err != nil {
 		return &ScyllaClient{}, errors.New("couldn't create session")
 	}

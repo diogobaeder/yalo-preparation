@@ -1,7 +1,7 @@
 package clients
 
 import (
-	"github.com/gocql/gocql"
+	"github.com/scylladb/gocqlx/v2"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
@@ -16,5 +16,5 @@ func TestStartsWithSession(t *testing.T) {
 	instance, err := NewScyllaClient()
 
 	ensure.Nilf(err, "Could not instantiate client: %v", err)
-	ensure.IsType((*gocql.Session)(nil), instance.session)
+	ensure.IsType(gocqlx.Session{}, instance.session)
 }
