@@ -64,7 +64,7 @@ func (c *YaloNatsClient) DonePublishing() <-chan struct{} {
 func NewNatsClient() (YaloNatsClient, error) {
 	url := os.Getenv("NATS_URL")
 	if url == "" {
-		return YaloNatsClient{}, errors.New("NATS_URL not defined")
+		return YaloNatsClient{}, errors.New("NATS_URL environment variable not defined")
 	}
 	conn, err := nats.Connect(url)
 	if err != nil {
