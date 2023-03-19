@@ -40,4 +40,7 @@ func main() {
 	if err != nil {
 		log.Panicf("Couldn't subscribe the client: %v", err)
 	}
+
+	for {
+	}
 }

@@ -42,3 +42,7 @@ migrate-down:
     for keyspace in {{ KEYSPACES }}; do
         migrate -database ${SCYLLA_MIGRATION_URL}/${keyspace} -path ${MIGRATIONS_PATH} down
     done
+
+send-requests:
+    #!/usr/bin/env sh
+    nats pub --count=100 --sleep='1s' 'yalo.request.johndoe' 'Heres a counter: {{'{{ Count }}'}}'
