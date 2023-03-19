@@ -42,15 +42,10 @@ func (c *ScyllaClient) Truncate() error {
 
 func (c *ScyllaClient) LatestForUser(user string, since time.Time) ([]*Message, error) {
 	var messages []*Message
-	//query := c.session.Query(messageTable.Select()).BindMap(qb.M{
-	//	"user": user,
-	//	"time": qb.GtOrEqLit("time", since.String()),
-	//})
 	query := c.session.Query(qb.Select(messageTable.Name()).Where(
 		qb.EqLit("user", fmt.Sprintf("'%v'", user)),
 		qb.GtOrEqLit("time", since.Format("'2006-01-02 15:04:05.999'")),
 	).ToCql())
-	//log.Fatalln(query.String())
 	if err := query.SelectRelease(&messages); err != nil {
 		return nil, err
 	}
