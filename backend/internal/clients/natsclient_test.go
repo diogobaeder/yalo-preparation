@@ -4,7 +4,6 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"os"
 	"testing"
 	"time"
 )
@@ -60,9 +59,6 @@ func (p *pubAckFuture) Msg() *nats.Msg {
 
 func TestStartsWithJetStream(t *testing.T) {
 	ensure := require.New(t)
-	if os.Getenv("NATS_URL") == "" {
-		t.Skip("NATS_URL not configured, skipping the test.")
-	}
 
 	instance, err := NewNatsClient()
 
@@ -74,7 +70,7 @@ func TestStartsWithJetStream(t *testing.T) {
 func TestPreparesClient(t *testing.T) {
 	ensure := require.New(t)
 	js := new(JetStreamContextMock)
-	instance := &YaloNatsClient{js}
+	instance := &NatsClient{js}
 	duration, _ := time.ParseDuration("24h")
 	config := &nats.StreamConfig{
 		Name:     "yalo",
@@ -92,7 +88,7 @@ func TestPreparesClient(t *testing.T) {
 func TestSubscribesToSubject(t *testing.T) {
 	ensure := require.New(t)
 	js := new(JetStreamContextMock)
-	instance := &YaloNatsClient{js}
+	instance := &NatsClient{js}
 	subject := "yalo.something"
 	callback := func(msg *nats.Msg) {}
 	subscription := new(nats.Subscription)
@@ -109,7 +105,7 @@ func TestSubscribesToSubject(t *testing.T) {
 func TestSubscribesToSubjectInQueue(t *testing.T) {
 	ensure := require.New(t)
 	js := new(JetStreamContextMock)
-	instance := &YaloNatsClient{js}
+	instance := &NatsClient{js}
 	subject := "yalo.something"
 	queue := "some_queue"
 	callback := func(msg *nats.Msg) {}
@@ -127,7 +123,7 @@ func TestSubscribesToSubjectInQueue(t *testing.T) {
 func TestPublishesToSubject(t *testing.T) {
 	ensure := require.New(t)
 	js := new(JetStreamContextMock)
-	instance := &YaloNatsClient{js}
+	instance := &NatsClient{js}
 	subject := "yalo.something"
 	data := []byte("somewhere")
 	paf := new(pubAckFuture)
@@ -142,7 +138,7 @@ func TestPublishesToSubject(t *testing.T) {
 func TestChecksIsDonePublishing(t *testing.T) {
 	ensure := require.New(t)
 	js := new(JetStreamContextMock)
-	instance := &YaloNatsClient{js}
+	instance := &NatsClient{js}
 	channel := make(<-chan struct{})
 	js.On("PublishAsyncComplete").Return(channel)
 
