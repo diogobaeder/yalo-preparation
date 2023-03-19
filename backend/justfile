@@ -11,7 +11,10 @@ test-all:
     go test -v ./...
 
 run-bot:
-    go run cmd/bot.go
+    go run cmd/bot/bot.go
+
+run-auditor:
+    go run cmd/auditor/auditor.go
 
 create-scylla-keyspaces:
     #!/usr/bin/env sh

@@ -88,32 +88,41 @@ func NewNatsClient() (*NatsClient, error) {
 }
 
 type UserInfo struct {
-	User    string
-	Message string
-	ReplyTo string
+	User      string
+	Message   string
+	ReplyTo   string
+	Direction string
 }
 
 type SubjectMatcher struct {
-	botSubjectPattern *regexp.Regexp
+	subjectPattern *regexp.Regexp
 }
 
 func (s *SubjectMatcher) FindUser(subject string) string {
-	matches := s.botSubjectPattern.FindStringSubmatch(subject)
-	index := s.botSubjectPattern.SubexpIndex("user")
+	matches := s.subjectPattern.FindStringSubmatch(subject)
+	index := s.subjectPattern.SubexpIndex("user")
+	return matches[index]
+}
+
+func (s *SubjectMatcher) FindDirection(subject string) string {
+	matches := s.subjectPattern.FindStringSubmatch(subject)
+	index := s.subjectPattern.SubexpIndex("direction")
 	return matches[index]
 }
 
 func (s *SubjectMatcher) ExtractInfo(msg *nats.Msg) *UserInfo {
 	user := s.FindUser(msg.Subject)
+	direction := s.FindDirection(msg.Subject)
 	return &UserInfo{
-		User:    user,
-		Message: string(msg.Data),
-		ReplyTo: fmt.Sprintf(`%v.user.%v`, STREAM_NAMESPACE, user),
+		User:      user,
+		Message:   string(msg.Data),
+		ReplyTo:   fmt.Sprintf(`%v.reply.%v`, STREAM_NAMESPACE, user),
+		Direction: direction,
 	}
 }
 
 func NewSubjectMatcher() *SubjectMatcher {
 	return &SubjectMatcher{
-		botSubjectPattern: regexp.MustCompile(fmt.Sprintf(`^%v\.bot\.(?P<user>[^.]+)$`, STREAM_NAMESPACE)),
+		subjectPattern: regexp.MustCompile(fmt.Sprintf(`^%v\.(?P<direction>request|reply)\.(?P<user>[^.]+)$`, STREAM_NAMESPACE)),
 	}
 }

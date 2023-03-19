@@ -14,7 +14,7 @@ import (
 
 var messageMetadata = table.Metadata{
 	Name:    "messages",
-	Columns: []string{"user", "time", "message"},
+	Columns: []string{"user", "time", "message", "direction"},
 	PartKey: []string{"user"},
 	SortKey: []string{"time"},
 }
@@ -22,9 +22,10 @@ var messageMetadata = table.Metadata{
 var MessageTable = table.New(messageMetadata)
 
 type Message struct {
-	User    string
-	Time    time.Time
-	Message string
+	User      string
+	Time      time.Time
+	Message   string
+	Direction string
 }
 
 type MessagesRepository struct {
@@ -69,12 +70,13 @@ func NewMessagesRepository() (*MessagesRepository, error) {
 	return &MessagesRepository{&session}, nil
 }
 
-func NewMessage(user string, message string) *Message {
+func NewMessage(user string, message string, direction string) *Message {
 	now := time.UnixMilli(time.Now().UnixMilli()).UTC()
 
 	return &Message{
-		User:    user,
-		Message: message,
-		Time:    now,
+		User:      user,
+		Message:   message,
+		Time:      now,
+		Direction: direction,
 	}
 }

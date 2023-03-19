@@ -156,13 +156,17 @@ func (s *SubjectMatcherSuite) SetupSuite() {
 	s.matcher = NewSubjectMatcher()
 }
 
-func (s *SubjectMatcherSuite) TestFindsUser() {
-	s.Require().Equal(s.matcher.FindUser("yalo.bot.johndoe"), "johndoe")
+func (s *SubjectMatcherSuite) TestFindsUserFromRequest() {
+	s.Require().Equal(s.matcher.FindUser("yalo.request.johndoe"), "johndoe")
 }
 
-func (s *SubjectMatcherSuite) TestExtractsUserInfoFromNatsMessage() {
+func (s *SubjectMatcherSuite) TestFindsUserFromReply() {
+	s.Require().Equal(s.matcher.FindUser("yalo.reply.johndoe"), "johndoe")
+}
+
+func (s *SubjectMatcherSuite) TestExtractsUserInfoFromRequestMessage() {
 	msg := &nats.Msg{
-		Subject: "yalo.bot.johndoe",
+		Subject: "yalo.request.johndoe",
 		Data:    []byte("Just said something"),
 	}
 
@@ -170,7 +174,22 @@ func (s *SubjectMatcherSuite) TestExtractsUserInfoFromNatsMessage() {
 
 	s.Require().Equal(info.User, "johndoe")
 	s.Require().Equal(info.Message, "Just said something")
-	s.Require().Equal(info.ReplyTo, "yalo.user.johndoe")
+	s.Require().Equal(info.ReplyTo, "yalo.reply.johndoe")
+	s.Require().Equal(info.Direction, "request")
+}
+
+func (s *SubjectMatcherSuite) TestExtractsUserInfoFromReplyMessage() {
+	msg := &nats.Msg{
+		Subject: "yalo.reply.johndoe",
+		Data:    []byte("Just responded something"),
+	}
+
+	info := s.matcher.ExtractInfo(msg)
+
+	s.Require().Equal(info.User, "johndoe")
+	s.Require().Equal(info.Message, "Just responded something")
+	s.Require().Equal(info.ReplyTo, "yalo.reply.johndoe")
+	s.Require().Equal(info.Direction, "reply")
 }
 
 func TestSubjectMatcherSuite(t *testing.T) {
