@@ -68,3 +68,13 @@ func NewMessagesRepository() (*MessagesRepository, error) {
 
 	return &MessagesRepository{&session}, nil
 }
+
+func NewMessage(user string, message string) *Message {
+	now := time.UnixMilli(time.Now().UnixMilli()).UTC()
+
+	return &Message{
+		User:    user,
+		Message: message,
+		Time:    now,
+	}
+}

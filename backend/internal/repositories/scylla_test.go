@@ -25,27 +25,38 @@ func (s *MessagesRepositorySuite) TestStartsWithSession() {
 }
 
 func (s *MessagesRepositorySuite) TestQueriesLatestMessagesForUser() {
-	now := time.UnixMilli(time.Now().UnixMilli()).UTC()
-	past := now.Add(time.Hour * -1)
-	message := &Message{
-		"johndoe",
-		now,
-		"Something to say",
-	}
-
+	message := NewMessage("johndoe", "Something to say")
 	s.Require().Nil(s.repo.Insert(message))
-	retrieved, err := s.repo.LatestForUser("johndoe", past)
+
+	retrieved, err := s.repo.LatestForUser("johndoe", message.Time.Add(time.Hour*-1))
 
 	s.Require().Nil(err)
-
 	s.Require().Equal(1, len(retrieved))
 	s.Require().Equal(Message{
 		User:    "johndoe",
-		Time:    now,
+		Time:    message.Time,
 		Message: "Something to say",
 	}, *retrieved[0])
 }
 
 func TestMessagesRepositorySuite(t *testing.T) {
 	suite.Run(t, new(MessagesRepositorySuite))
+}
+
+type MessagesSuite struct {
+	suite.Suite
+}
+
+func (s *MessagesSuite) TestCreatesNewMessage() {
+	now := time.UnixMilli(time.Now().UnixMilli()).UTC()
+
+	message := NewMessage("johndoe", "Something useful")
+
+	s.Require().Equal("johndoe", message.User)
+	s.Require().Equal("Something useful", message.Message)
+	s.Require().GreaterOrEqual(message.Time, now)
+}
+
+func TestMessageSuite(t *testing.T) {
+	suite.Run(t, new(MessagesSuite))
 }
