@@ -19,7 +19,7 @@ var messageMetadata = table.Metadata{
 	SortKey: []string{"time"},
 }
 
-var messageTable = table.New(messageMetadata)
+var MessageTable = table.New(messageMetadata)
 
 type Message struct {
 	User    string
@@ -32,17 +32,17 @@ type ScyllaClient struct {
 }
 
 func (c *ScyllaClient) Insert(message *Message) error {
-	query := c.session.Query(messageTable.Insert()).BindStruct(message)
+	query := c.session.Query(MessageTable.Insert()).BindStruct(message)
 	return query.ExecRelease()
 }
 
 func (c *ScyllaClient) Truncate() error {
-	return c.session.ExecStmt(fmt.Sprintf("TRUNCATE %v", messageTable.Name()))
+	return c.session.ExecStmt(fmt.Sprintf("TRUNCATE %v", MessageTable.Name()))
 }
 
 func (c *ScyllaClient) LatestForUser(user string, since time.Time) ([]*Message, error) {
 	var messages []*Message
-	query := c.session.Query(qb.Select(messageTable.Name()).Where(
+	query := c.session.Query(qb.Select(MessageTable.Name()).Where(
 		qb.EqLit("user", fmt.Sprintf("'%v'", user)),
 		qb.GtOrEqLit("time", since.Format("'2006-01-02 15:04:05.999'")),
 	).ToCql())
@@ -66,4 +66,21 @@ func NewScyllaClient() (*ScyllaClient, error) {
 		return &ScyllaClient{}, err
 	}
 	return &ScyllaClient{&session}, nil
+}
+
+type MessagesRepository struct {
+	client *ScyllaClient
+}
+
+func (r *MessagesRepository) truncate() error {
+	return r.client.Truncate()
+}
+
+func NewMessagesRepository() (*MessagesRepository, error) {
+	client, err := NewScyllaClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return &MessagesRepository{client}, nil
 }
