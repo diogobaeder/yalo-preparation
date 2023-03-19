@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+const STREAM_NAMESPACE string = "yalo"
+const STREAM_DURATION string = "24h"
+const STREAM_SUBJECTS string = "yalo.>"
+
 // SimplifiedJetStream is a simplified version of nats.JetStreamContext containing only the methods we need.
 // This helps with mocking the interface in tests.
 type SimplifiedJetStream interface {
@@ -24,10 +28,10 @@ type NatsClient struct {
 
 // Prepare makes sure the client is prepared to send and receive messages.
 func (c *NatsClient) Prepare() error {
-	duration, _ := time.ParseDuration("24h")
+	duration, _ := time.ParseDuration(STREAM_DURATION)
 	_, err := c.js.AddStream(&nats.StreamConfig{
-		Name:     "yalo",
-		Subjects: []string{"yalo.>"},
+		Name:     STREAM_NAMESPACE,
+		Subjects: []string{STREAM_SUBJECTS},
 		MaxAge:   duration,
 	})
 
