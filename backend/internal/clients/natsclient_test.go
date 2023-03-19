@@ -3,7 +3,7 @@ package clients
 import (
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
 )
@@ -57,20 +57,28 @@ func (p *pubAckFuture) Msg() *nats.Msg {
 	return new(nats.Msg)
 }
 
-func TestStartsWithJetStream(t *testing.T) {
-	ensure := require.New(t)
-
-	instance, err := NewNatsClient()
-
-	ensure.Nilf(err, "Could not instantiate client: %v", err)
-	ensure.Implements((*SimplifiedJetStream)(nil), instance.js)
-	ensure.Implements((*nats.JetStreamContext)(nil), instance.js)
+type NatsClientSuite struct {
+	suite.Suite
+	client *NatsClient
+	js     *JetStreamContextMock
 }
 
-func TestPreparesClient(t *testing.T) {
-	ensure := require.New(t)
+func (s *NatsClientSuite) SetupSuite() {
 	js := new(JetStreamContextMock)
-	instance := &NatsClient{js}
+	client := &NatsClient{js}
+	s.js = js
+	s.client = client
+}
+
+func (s *NatsClientSuite) TestStartsWithJetStream() {
+	instance, err := NewNatsClient()
+
+	s.Require().Nilf(err, "Could not instantiate client: %v", err)
+	s.Require().Implements((*SimplifiedJetStream)(nil), instance.js)
+	s.Require().Implements((*nats.JetStreamContext)(nil), instance.js)
+}
+
+func (s *NatsClientSuite) TestPreparesClient() {
 	duration, _ := time.ParseDuration("24h")
 	config := &nats.StreamConfig{
 		Name:     "yalo",
@@ -78,71 +86,93 @@ func TestPreparesClient(t *testing.T) {
 		MaxAge:   duration,
 	}
 	info := new(nats.StreamInfo)
-	js.On("AddStream", config).Return(info, nil)
+	s.js.On("AddStream", config).Return(info, nil)
 
-	_ = instance.Prepare()
+	_ = s.client.Prepare()
 
-	ensure.True(js.AssertCalled(t, "AddStream", config))
+	s.Require().True(s.js.AssertCalled(s.T(), "AddStream", config))
 }
 
-func TestSubscribesToSubject(t *testing.T) {
-	ensure := require.New(t)
-	js := new(JetStreamContextMock)
-	instance := &NatsClient{js}
+func (s *NatsClientSuite) TestSubscribesToSubject() {
 	subject := "yalo.something"
 	callback := func(msg *nats.Msg) {}
 	subscription := new(nats.Subscription)
 	// Note: unfortunately I can only make this test pass if I use mock.Anything to match the callback function.
 	// In the future hopefully I can use testify's more specific matchers.
-	js.On("Subscribe", subject, mock.Anything).Return(subscription, nil)
+	s.js.On("Subscribe", subject, mock.Anything).Return(subscription, nil)
 
-	_, err := instance.Subscribe(subject, callback)
+	_, err := s.client.Subscribe(subject, callback)
 
-	ensure.Nil(err)
-	ensure.True(js.AssertCalled(t, "Subscribe", subject, mock.Anything))
+	s.Require().Nil(err)
+	s.Require().True(s.js.AssertCalled(s.T(), "Subscribe", subject, mock.Anything))
 }
 
-func TestSubscribesToSubjectInQueue(t *testing.T) {
-	ensure := require.New(t)
-	js := new(JetStreamContextMock)
-	instance := &NatsClient{js}
+func (s *NatsClientSuite) TestSubscribesToSubjectInQueue() {
 	subject := "yalo.something"
 	queue := "some_queue"
 	callback := func(msg *nats.Msg) {}
 	subscription := new(nats.Subscription)
 	// Note: unfortunately I can only make this test pass if I use mock.Anything to match the callback function.
 	// In the future hopefully I can use testify's more specific matchers.
-	js.On("QueueSubscribe", subject, queue, mock.Anything).Return(subscription, nil)
+	s.js.On("QueueSubscribe", subject, queue, mock.Anything).Return(subscription, nil)
 
-	_, err := instance.QueueSubscribe(subject, queue, callback)
+	_, err := s.client.QueueSubscribe(subject, queue, callback)
 
-	ensure.Nil(err)
-	ensure.True(js.AssertCalled(t, "QueueSubscribe", subject, queue, mock.Anything))
+	s.Require().Nil(err)
+	s.Require().True(s.js.AssertCalled(s.T(), "QueueSubscribe", subject, queue, mock.Anything))
 }
 
-func TestPublishesToSubject(t *testing.T) {
-	ensure := require.New(t)
-	js := new(JetStreamContextMock)
-	instance := &NatsClient{js}
+func (s *NatsClientSuite) TestPublishesToSubject() {
 	subject := "yalo.something"
 	data := []byte("somewhere")
 	paf := new(pubAckFuture)
-	js.On("PublishAsync", subject, data).Return(paf, nil)
+	s.js.On("PublishAsync", subject, data).Return(paf, nil)
 
-	_, err := instance.Publish(subject, data)
+	_, err := s.client.Publish(subject, data)
 
-	ensure.Nil(err)
-	ensure.True(js.AssertCalled(t, "PublishAsync", subject, data))
+	s.Require().Nil(err)
+	s.Require().True(s.js.AssertCalled(s.T(), "PublishAsync", subject, data))
 }
 
-func TestChecksIsDonePublishing(t *testing.T) {
-	ensure := require.New(t)
-	js := new(JetStreamContextMock)
-	instance := &NatsClient{js}
+func (s *NatsClientSuite) TestChecksIsDonePublishing() {
 	channel := make(<-chan struct{})
-	js.On("PublishAsyncComplete").Return(channel)
+	s.js.On("PublishAsyncComplete").Return(channel)
 
-	instance.DonePublishing()
+	s.client.DonePublishing()
 
-	ensure.True(js.AssertCalled(t, "PublishAsyncComplete"))
+	s.Require().True(s.js.AssertCalled(s.T(), "PublishAsyncComplete"))
+}
+
+func TestNatsSuite(t *testing.T) {
+	suite.Run(t, new(NatsClientSuite))
+}
+
+type SubjectMatcherSuite struct {
+	suite.Suite
+	matcher *SubjectMatcher
+}
+
+func (s *SubjectMatcherSuite) SetupSuite() {
+	s.matcher = NewSubjectMatcher()
+}
+
+func (s *SubjectMatcherSuite) TestFindsUser() {
+	s.Require().Equal(s.matcher.FindUser("yalo.bot.johndoe"), "johndoe")
+}
+
+func (s *SubjectMatcherSuite) TestExtractsUserInfoFromNatsMessage() {
+	msg := &nats.Msg{
+		Subject: "yalo.bot.johndoe",
+		Data:    []byte("Just said something"),
+	}
+
+	info := s.matcher.ExtractInfo(msg)
+
+	s.Require().Equal(info.User, "johndoe")
+	s.Require().Equal(info.Message, "Just said something")
+	s.Require().Equal(info.ReplyTo, "yalo.user.johndoe")
+}
+
+func TestSubjectMatcherSuite(t *testing.T) {
+	suite.Run(t, new(SubjectMatcherSuite))
 }

@@ -2,8 +2,10 @@ package clients
 
 import (
 	"errors"
+	"fmt"
 	"github.com/nats-io/nats.go"
 	"os"
+	"regexp"
 	"time"
 )
 
@@ -83,4 +85,35 @@ func NewNatsClient() (*NatsClient, error) {
 	return &NatsClient{
 		js,
 	}, nil
+}
+
+type UserInfo struct {
+	User    string
+	Message string
+	ReplyTo string
+}
+
+type SubjectMatcher struct {
+	botSubjectPattern *regexp.Regexp
+}
+
+func (s *SubjectMatcher) FindUser(subject string) string {
+	matches := s.botSubjectPattern.FindStringSubmatch(subject)
+	index := s.botSubjectPattern.SubexpIndex("user")
+	return matches[index]
+}
+
+func (s *SubjectMatcher) ExtractInfo(msg *nats.Msg) *UserInfo {
+	user := s.FindUser(msg.Subject)
+	return &UserInfo{
+		User:    user,
+		Message: string(msg.Data),
+		ReplyTo: fmt.Sprintf(`%v.user.%v`, STREAM_NAMESPACE, user),
+	}
+}
+
+func NewSubjectMatcher() *SubjectMatcher {
+	return &SubjectMatcher{
+		botSubjectPattern: regexp.MustCompile(fmt.Sprintf(`^%v\.bot\.(?P<user>[^.]+)$`, STREAM_NAMESPACE)),
+	}
 }

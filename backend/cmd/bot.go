@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/nats-io/nats.go"
 	"log"
-	"regexp"
 	"time"
 	"yalo/diogo/demo/backend/internal/clients"
 )
@@ -12,7 +11,7 @@ import (
 func main() {
 	log.Println("Starting bot...")
 	client, err := clients.NewNatsClient()
-	botSubjectPattern := regexp.MustCompile(`^yalo\.bot\.(?P<user>[^.]+)$`)
+	matcher := clients.NewSubjectMatcher()
 
 	if err != nil {
 		log.Panicf("Couldn't instantiate the client: %v", err)
@@ -24,14 +23,10 @@ func main() {
 
 	log.Println("Subscribing to subject within queue group...")
 	_, err = client.QueueSubscribe("yalo.bot.>", "bots", func(msg *nats.Msg) {
-		matches := botSubjectPattern.FindStringSubmatch(msg.Subject)
-		index := botSubjectPattern.SubexpIndex("user")
-		user := matches[index]
-		userMessage := string(msg.Data)
-		log.Printf(`Got message from user %v: "%v"`, user, userMessage)
-		userSubject := fmt.Sprintf("yalo.user.%v", user)
-		botMessage := fmt.Sprintf(`Got your message, %v! This is what you said: "%v"`, user, userMessage)
-		if _, err := client.Publish(userSubject, []byte(botMessage)); err != nil {
+		info := matcher.ExtractInfo(msg)
+		log.Printf(`Got message from user %v: "%v"`, info.User, info.Message)
+		botMessage := fmt.Sprintf(`Got your message, %v! This is what you said: "%v"`, info.User, info.Message)
+		if _, err := client.Publish(info.ReplyTo, []byte(botMessage)); err != nil {
 			log.Panicf("Couldn't publish message: %v", err)
 		}
 	})
