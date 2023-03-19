@@ -1,4 +1,4 @@
-package clients
+package repositories
 
 import (
 	"github.com/scylladb/gocqlx/v2"
