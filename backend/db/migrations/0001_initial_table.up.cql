@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS yalo.messages
+CREATE TABLE IF NOT EXISTS messages
 (
     user    text,
     time    timestamp,

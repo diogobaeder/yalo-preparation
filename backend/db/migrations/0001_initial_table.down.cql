@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS yalo.messages;
+DROP TABLE IF EXISTS messages;

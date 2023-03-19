@@ -1,9 +1,13 @@
 export NATS_URL := "nats://localhost:4222,nats://localhost:4223,nats://localhost:4224"
 export SCYLLA_ADDRS := "localhost:9042,localhost:9043,localhost:9044"
-export SCYLLA_MIGRATION_URL := "cassandra://localhost:9042/yalo"
+export SCYLLA_MIGRATION_URL := "cassandra://localhost:9042"
+export SCYLLA_KEYSPACE := "yalo"
 export MIGRATIONS_PATH := "db/migrations"
 
+KEYSPACES := "yalo tests"
+
 test-all:
+    export SCYLLA_KEYSPACE="tests"
     go test -v ./...
 
 run-bot:
@@ -11,7 +15,7 @@ run-bot:
 
 create-scylla-keyspaces:
     #!/usr/bin/env sh
-    for keyspace in yalo; do
+    for keyspace in {{ KEYSPACES }}; do
         echo "Ensuring keyspace ${keyspace} is created"
         cqlsh -e "CREATE KEYSPACE IF NOT EXISTS ${keyspace} WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}" localhost 9042
     done
@@ -25,9 +29,13 @@ create-scylla-migration:
 migrate-up:
     #!/usr/bin/env sh
     echo "Migrating ScyllaDB up"
-    migrate -database ${SCYLLA_MIGRATION_URL} -path ${MIGRATIONS_PATH} up
+    for keyspace in {{ KEYSPACES }}; do
+        migrate -database ${SCYLLA_MIGRATION_URL}/${keyspace} -path ${MIGRATIONS_PATH} up
+    done
 
 migrate-down:
     #!/usr/bin/env sh
     echo "Migrating ScyllaDB down"
-    migrate -database ${SCYLLA_MIGRATION_URL} -path ${MIGRATIONS_PATH} down
+    for keyspace in {{ KEYSPACES }}; do
+        migrate -database ${SCYLLA_MIGRATION_URL}/${keyspace} -path ${MIGRATIONS_PATH} down
+    done
