@@ -65,22 +65,22 @@ func (c *NatsClient) DonePublishing() <-chan struct{} {
 }
 
 // NewNatsClient creates a new instance of NatsClient, with sane defaults.
-func NewNatsClient() (NatsClient, error) {
+func NewNatsClient() (*NatsClient, error) {
 	url := os.Getenv("NATS_URL")
 	if url == "" {
-		return NatsClient{}, errors.New("NATS_URL environment variable not defined")
+		return nil, errors.New("NATS_URL environment variable not defined")
 	}
 	conn, err := nats.Connect(url)
 	if err != nil {
-		return NatsClient{}, err
+		return nil, err
 	}
 
 	js, err := conn.JetStream()
 	if err != nil {
-		return NatsClient{}, err
+		return nil, err
 	}
 
-	return NatsClient{
+	return &NatsClient{
 		js,
 	}, nil
 }
