@@ -29,7 +29,7 @@ func main() {
 	log.Println("Subscribing to subject within queue group...")
 	_, err = client.QueueSubscribe("yalo.>", "auditors", func(msg *nats.Msg) {
 		info := matcher.ExtractInfo(msg)
-		log.Printf(`Got message from user %v: "%v"`, info.User, info.Message)
+		log.Printf(`Got %v message from user %v: "%v"`, info.Direction, info.User, info.Message)
 		message := repositories.NewMessage(info.User, info.Message, info.Direction)
 		err := repo.Insert(message)
 		if err != nil {
@@ -42,5 +42,8 @@ func main() {
 	}
 
 	for {
+		select {
+		case <-client.DonePublishing():
+		}
 	}
 }
