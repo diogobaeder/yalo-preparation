@@ -42,9 +42,8 @@ services:
       - "9042:9042"
       - "10000:10000"
     restart: always
-    command: --seeds=scylla-node1,scylla-node2 --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
-    networks:
-      web:
+    command: --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+    networks: ["scylla"]
 
   scylla-node2:
     container_name: scylla-node2
@@ -52,9 +51,9 @@ services:
     ports:
       - "9043:9042"
     restart: always
-    command: --seeds=scylla-node1,scylla-node2 --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
-    networks:
-      web:
+    command: --seeds=$(getent hosts scylla-node1 | awk '{print $1}') --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+    networks: ["scylla"]
+    depends_on: ["scylla-node1"]
 
   scylla-node3:
     container_name: scylla-node3
@@ -62,12 +61,12 @@ services:
     ports:
       - "9044:9042"
     restart: always
-    command: --seeds=scylla-node1,scylla-node2 --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
-    networks:
-      web:
+    command: --seeds=$(getent hosts scylla-node1 | awk '{print $1}') --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+    networks: ["scylla"]
+    depends_on: ["scylla-node1"]
 
 networks:
   nats:
     name: nats
-  web:
+  scylla:
     driver: bridge
