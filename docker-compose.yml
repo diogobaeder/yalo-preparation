@@ -19,7 +19,7 @@ services:
     image: nats
     ports:
       - "4223:4222"
-    command: "-js -n nats-1 --cluster_name NATS --cluster nats://0.0.0.0:6222 --routes=nats://ruser:T0pS3cr3t@nats:6222"
+    command: "-js -n nats-1 --cluster_name NATS --cluster nats://0.0.0.0:6223 --routes=nats://ruser:T0pS3cr3t@nats:6222"
     networks: ["nats"]
     depends_on: ["nats"]
 
@@ -27,7 +27,7 @@ services:
     image: nats
     ports:
       - "4224:4222"
-    command: "-js -n nats-2 --cluster_name NATS --cluster nats://0.0.0.0:6222 --routes=nats://ruser:T0pS3cr3t@nats:6222"
+    command: "-js -n nats-2 --cluster_name NATS --cluster nats://0.0.0.0:6224 --routes=nats://ruser:T0pS3cr3t@nats:6222"
     networks: ["nats"]
     depends_on: ["nats"]
 
