@@ -43,6 +43,7 @@ func main() {
 		select {
 		case message := <-channel:
 			{
+				log.Printf(`Will insert message: %v - at %v`, message.Message, message.Time.String())
 				err := repo.Insert(message)
 				if err != nil {
 					log.Panicf("error inserting message in the database: %v", err)

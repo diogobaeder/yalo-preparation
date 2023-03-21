@@ -45,4 +45,4 @@ migrate-down:
 
 send-requests:
     #!/usr/bin/env sh
-    nats pub --count=100 --sleep='1s' 'yalo.request.johndoe' 'Heres a counter: {{'{{ Count }}'}}'
+    nats pub --count=100 --sleep='5ms' 'yalo.request.johndoe' 'Heres a counter: {{'{{ Count }}'}}'

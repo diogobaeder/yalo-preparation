@@ -25,7 +25,7 @@ func main() {
 	_, err = client.QueueSubscribe("yalo.request.>", "bots", func(msg *nats.Msg) {
 		info := matcher.ExtractInfo(msg)
 		log.Printf(`Got message from user %v: "%v"`, info.User, info.Message)
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(1 * time.Millisecond)
 		botMessage := fmt.Sprintf(`Got your message, %v! This is what you said: "%v"`, info.User, info.Message)
 		if _, err := client.Publish(info.ReplyTo, []byte(botMessage)); err != nil {
 			log.Panicf("Couldn't publish message: %v", err)
