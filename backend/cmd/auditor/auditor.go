@@ -11,6 +11,7 @@ func main() {
 	log.Println("Starting auditor...")
 	client, err := clients.NewNatsClient()
 	matcher := clients.NewSubjectMatcher()
+	channel := make(chan *repositories.Message)
 
 	if err != nil {
 		log.Panicf("Couldn't instantiate the client: %v", err)
@@ -31,10 +32,7 @@ func main() {
 		info := matcher.ExtractInfo(msg)
 		log.Printf(`Got %v message from user %v: "%v"`, info.Direction, info.User, info.Message)
 		message := repositories.NewMessage(info.User, info.Message, info.Direction)
-		err := repo.Insert(message)
-		if err != nil {
-			log.Panicf("error inserting message in the database: %v", err)
-		}
+		channel <- message
 	})
 
 	if err != nil {
@@ -43,6 +41,13 @@ func main() {
 
 	for {
 		select {
+		case message := <-channel:
+			{
+				err := repo.Insert(message)
+				if err != nil {
+					log.Panicf("error inserting message in the database: %v", err)
+				}
+			}
 		case <-client.DonePublishing():
 		}
 	}
