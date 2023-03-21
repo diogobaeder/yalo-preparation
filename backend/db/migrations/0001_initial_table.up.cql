@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS messages
     time    timestamp,
     message text,
     direction text,
-    PRIMARY KEY ( user, time )
+    PRIMARY KEY ( user, time, direction )
 ) WITH
     CLUSTERING ORDER BY (time DESC)
     AND compaction = {
