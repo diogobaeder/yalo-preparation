@@ -17,6 +17,9 @@ run-bot:
 run-auditor:
     go run cmd/auditor/auditor.go
 
+run-api:
+    go run cmd/api/api.go
+
 create-scylla-keyspaces:
     #!/usr/bin/env sh
     for keyspace in {{ KEYSPACES }}; do
