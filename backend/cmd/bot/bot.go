@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/nats-io/nats.go"
 	"log"
+	"time"
 	"yalo/diogo/demo/backend/internal/clients"
 )
 
@@ -37,7 +38,8 @@ func main() {
 	log.Println("Now waiting for messages.")
 	for {
 		select {
-		case <-client.DonePublishing():
+		default:
+			time.Sleep(1 * time.Millisecond)
 		}
 	}
 }

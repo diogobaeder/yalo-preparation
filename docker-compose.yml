@@ -1,7 +1,128 @@
 version: "3.9"
 services:
-#  bot-1:
-#    build: backend
+
+  # Admin API
+
+  admin-api-1:
+    build: ./backend/
+    restart: always
+    command: "go run cmd/api/api.go"
+    env_file:
+      - apps-in-containers.env
+    networks:
+      - apps
+      - nats
+      - scylla
+    ports:
+      - "8000:8000"
+    depends_on:
+      - nats
+      - nats-1
+      - nats-2
+      - scylla-node1
+      - scylla-node2
+      - scylla-node3
+
+  # Bots
+
+  bot-1:
+    build: ./backend/
+    restart: always
+    command: "go run cmd/bot/bot.go"
+    env_file:
+      - apps-in-containers.env
+    networks:
+      - apps
+      - nats
+      - scylla
+    depends_on:
+      - nats
+      - nats-1
+      - nats-2
+  bot-2:
+    build: ./backend/
+    restart: always
+    command: "go run cmd/bot/bot.go"
+    env_file:
+      - apps-in-containers.env
+    networks:
+      - apps
+      - nats
+      - scylla
+    depends_on:
+      - nats
+      - nats-1
+      - nats-2
+  bot-3:
+    build: ./backend/
+    restart: always
+    command: "go run cmd/bot/bot.go"
+    env_file:
+      - apps-in-containers.env
+    networks:
+      - apps
+      - nats
+      - scylla
+    depends_on:
+      - nats
+      - nats-1
+      - nats-2
+
+
+
+  # Auditors
+
+  auditor-1:
+    build: ./backend/
+    restart: always
+    command: "go run cmd/auditor/auditor.go"
+    env_file:
+      - apps-in-containers.env
+    networks:
+      - apps
+      - nats
+      - scylla
+    depends_on:
+      - nats
+      - nats-1
+      - nats-2
+      - scylla-node1
+      - scylla-node2
+      - scylla-node3
+  auditor-2:
+    build: ./backend/
+    restart: always
+    command: "go run cmd/auditor/auditor.go"
+    env_file:
+      - apps-in-containers.env
+    networks:
+      - apps
+      - nats
+      - scylla
+    depends_on:
+      - nats
+      - nats-1
+      - nats-2
+      - scylla-node1
+      - scylla-node2
+      - scylla-node3
+  auditor-3:
+    build: ./backend/
+    restart: always
+    command: "go run cmd/auditor/auditor.go"
+    env_file:
+      - apps-in-containers.env
+    networks:
+      - apps
+      - nats
+      - scylla
+    depends_on:
+      - nats
+      - nats-1
+      - nats-2
+      - scylla-node1
+      - scylla-node2
+      - scylla-node3
 
 
 
@@ -14,6 +135,7 @@ services:
       - "4222:4222"
     command: "-js -n nats --cluster_name NATS --cluster nats://0.0.0.0:6222 --http_port 8222 --routes=nats://ruser:T0pS3cr3t@localhost:6222"
     networks: ["nats"]
+    restart: always
 
   nats-1:
     image: nats
@@ -22,6 +144,7 @@ services:
     command: "-js -n nats-1 --cluster_name NATS --cluster nats://0.0.0.0:6223 --routes=nats://ruser:T0pS3cr3t@nats:6222"
     networks: ["nats"]
     depends_on: ["nats"]
+    restart: always
 
   nats-2:
     image: nats
@@ -30,6 +153,7 @@ services:
     command: "-js -n nats-2 --cluster_name NATS --cluster nats://0.0.0.0:6224 --routes=nats://ruser:T0pS3cr3t@nats:6222"
     networks: ["nats"]
     depends_on: ["nats"]
+    restart: always
 
 
 
@@ -42,7 +166,7 @@ services:
       - "9042:9042"
       - "10000:10000"
     restart: always
-    command: --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+    command: "--smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0"
     networks: ["scylla"]
 
   scylla-node2:
@@ -51,7 +175,7 @@ services:
     ports:
       - "9043:9042"
     restart: always
-    command: --seeds=$(getent hosts scylla-node1 | awk '{print $1}') --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+    command: "--seeds=$(getent hosts scylla-node1 | awk '{print $1}') --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0"
     networks: ["scylla"]
     depends_on: ["scylla-node1"]
 
@@ -61,12 +185,14 @@ services:
     ports:
       - "9044:9042"
     restart: always
-    command: --seeds=$(getent hosts scylla-node1 | awk '{print $1}') --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+    command: "--seeds=$(getent hosts scylla-node1 | awk '{print $1}') --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0"
     networks: ["scylla"]
     depends_on: ["scylla-node1"]
 
 networks:
+  apps:
+    name: apps
   nats:
     name: nats
   scylla:
-    driver: bridge
+    name: scylla

@@ -11,6 +11,9 @@ test-all:
     go test -v ./...
     @echo All tests ran successfully!
 
+build:
+    go build -o bin/ ./...
+
 run-bot:
     go run cmd/bot/bot.go
 

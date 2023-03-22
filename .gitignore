@@ -213,6 +213,9 @@ vendor/
 # Go workspace file
 go.work
 
+# Generated binaries
+backend/bin/
+
 
 
 ### JetBrains stuff

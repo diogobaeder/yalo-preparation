@@ -62,6 +62,8 @@ func NewMessagesRepository() (*MessagesRepository, error) {
 	hosts := strings.Split(urls, ",")
 	cluster := gocql.NewCluster(hosts...)
 	cluster.Keyspace = keyspace
+	cluster.Timeout = 5 * time.Second
+	cluster.ConnectTimeout = 5 * time.Second
 	session, err := gocqlx.WrapSession(cluster.CreateSession())
 	if err != nil {
 		return nil, err

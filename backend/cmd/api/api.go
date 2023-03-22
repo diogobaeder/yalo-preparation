@@ -42,7 +42,7 @@ func setupRouter() *gin.Engine {
 func main() {
 	port := os.Getenv("ADMIN_API_PORT")
 	if port == "" {
-		port = "8080"
+		port = "8000"
 	}
 	r := setupRouter()
 	_ = r.Run(fmt.Sprintf(":%v", port))

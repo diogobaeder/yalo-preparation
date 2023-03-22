@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/nats-io/nats.go"
 	"log"
+	"time"
 	"yalo/diogo/demo/backend/internal/clients"
 	"yalo/diogo/demo/backend/internal/repositories"
 )
@@ -49,7 +50,8 @@ func main() {
 					log.Panicf("error inserting message in the database: %v", err)
 				}
 			}
-		case <-client.DonePublishing():
+		default:
+			time.Sleep(1 * time.Millisecond)
 		}
 	}
 }

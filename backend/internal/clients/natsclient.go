@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/nats-io/nats.go"
+	"log"
 	"os"
 	"regexp"
 	"time"
@@ -72,6 +73,7 @@ func NewNatsClient() (*NatsClient, error) {
 	if url == "" {
 		return nil, errors.New("NATS_URL environment variable not defined")
 	}
+	log.Printf("NATS_URL: %v\n", url)
 	conn, err := nats.Connect(url)
 	if err != nil {
 		return nil, err
