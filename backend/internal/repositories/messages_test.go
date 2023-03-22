@@ -17,7 +17,7 @@ func (s *MessagesRepositorySuite) SetupSuite() {
 	s.Require().Nil(err)
 	s.repo = repo
 	// Make sure we start with a blank slate
-	s.Require().Nil(s.repo.truncate())
+	s.Require().Nil(s.repo.Truncate())
 }
 
 func (s *MessagesRepositorySuite) TestStartsWithSession() {

@@ -32,7 +32,7 @@ type MessagesRepository struct {
 	session *gocqlx.Session
 }
 
-func (r *MessagesRepository) truncate() error {
+func (r *MessagesRepository) Truncate() error {
 	return r.session.ExecStmt(fmt.Sprintf("TRUNCATE %v", MessageTable.Name()))
 }
 

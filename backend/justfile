@@ -9,6 +9,7 @@ KEYSPACES := "yalo tests"
 test-all:
     export SCYLLA_KEYSPACE="tests"
     go test -v ./...
+    @echo All tests ran successfully!
 
 run-bot:
     go run cmd/bot/bot.go
