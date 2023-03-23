@@ -6,7 +6,7 @@ services:
   admin-api-1:
     build: ./backend/
     restart: always
-    command: "go run cmd/api/api.go"
+    command: "./bin/api"
     env_file:
       - apps-in-containers.env
     networks:
@@ -28,7 +28,7 @@ services:
   bot-1:
     build: ./backend/
     restart: always
-    command: "go run cmd/bot/bot.go"
+    command: "./bin/bot"
     env_file:
       - apps-in-containers.env
     networks:
@@ -42,7 +42,7 @@ services:
   bot-2:
     build: ./backend/
     restart: always
-    command: "go run cmd/bot/bot.go"
+    command: "./bin/bot"
     env_file:
       - apps-in-containers.env
     networks:
@@ -56,7 +56,7 @@ services:
   bot-3:
     build: ./backend/
     restart: always
-    command: "go run cmd/bot/bot.go"
+    command: "./bin/bot"
     env_file:
       - apps-in-containers.env
     networks:
@@ -75,7 +75,7 @@ services:
   auditor-1:
     build: ./backend/
     restart: always
-    command: "go run cmd/auditor/auditor.go"
+    command: "./bin/auditor"
     env_file:
       - apps-in-containers.env
     networks:
@@ -92,7 +92,7 @@ services:
   auditor-2:
     build: ./backend/
     restart: always
-    command: "go run cmd/auditor/auditor.go"
+    command: "./bin/auditor"
     env_file:
       - apps-in-containers.env
     networks:
@@ -109,7 +109,7 @@ services:
   auditor-3:
     build: ./backend/
     restart: always
-    command: "go run cmd/auditor/auditor.go"
+    command: "./bin/auditor"
     env_file:
       - apps-in-containers.env
     networks:
